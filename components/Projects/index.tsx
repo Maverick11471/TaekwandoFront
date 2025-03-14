@@ -68,14 +68,14 @@ function AnimatedHeadline({ children }: { children: React.ReactNode }) {
   useLayoutEffect(() => {
     if (card.current) {
       gsap.from(card.current, {
-        opacity: 0,
-        x: -2000,
+        opacity: -20,
+        x: -3000,
         duration: 1,
         ease: "power3.out",
         scrollTrigger: {
           trigger: card.current,
           start: "0px bottom",
-          end: "bottom+=600px bottom",
+          end: "bottom+=400px bottom",
           scrub: true,
         },
       });

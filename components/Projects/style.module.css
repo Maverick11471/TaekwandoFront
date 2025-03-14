@@ -2,18 +2,17 @@
 
 .cards {
   margin-top: 20vh;
-  margin-bottom: 20vh;
+  margin-bottom: 40vh;
   position: relative;
 }
 
 .headline {
-  margin-top: 40vh;
+  margin-top: 60vh;
   color: white;
   align-items: center;
   justify-content: center;
   display: flex;
   font-size: 5vw;
-
   font-family: "Nanum Gothic", sans-serif;
   font-weight: 700;
   font-style: normal;
@@ -21,7 +20,7 @@
 
 @media screen and (max-width: 767px) {
   .headline {
-    margin-top: 70vh;
+    /* margin-top: 70vh; */
     color: white;
     align-items: center;
     justify-content: center;
