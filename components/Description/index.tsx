@@ -21,7 +21,7 @@ export default function Index() {
   );
 }
 
-function AnimatedText({ children }) {
+function AnimatedText({ children }: { children: React.ReactNode }) {
   const text = useRef(null);
 
   useLayoutEffect(() => {

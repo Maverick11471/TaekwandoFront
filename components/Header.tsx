@@ -1,6 +1,5 @@
 "use client";
 
-import type { NextPage } from "next";
 import { useCallback } from "react";
 import Image from "next/image";
 import styles from "../styles/Header.module.css";
@@ -23,7 +22,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
   }, []);
 
   return (
-    <div className={styles.header}>
+    <div className={`${styles.header} ${className || ""}`}>
       <div className={styles.nav}>
         <button className={styles.mainsvg}>
           <Image
