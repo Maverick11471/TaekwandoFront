@@ -1,0 +1,17 @@
+.main {
+  display: flex;
+  flex-direction: column;
+}
+
+.description {
+  opacity: 0;
+  transform: translateY(50px);
+  transition:
+    opacity 0.3s,
+    transform 0.3s;
+}
+
+.description.visible {
+  opacity: 1;
+  transform: translateY(0);
+}

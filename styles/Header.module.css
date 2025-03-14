@@ -1,0 +1,166 @@
+.div,
+.icon {
+  position: relative;
+}
+.icon {
+  width: 13.1px;
+  max-height: 100%;
+  object-fit: cover;
+}
+.div {
+  width: 109px;
+  font-size: 14.06px;
+  line-height: 20px;
+  font-weight: 800;
+  font-family: var(--font-gangwonedupower);
+  color: #000;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.mainsvg {
+  cursor: pointer;
+  border: 0;
+  padding: 0 7px;
+  background-color: transparent;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+.div1 {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 14.06px;
+  line-height: 20px;
+  font-family: var(--font-noto-sans-kr);
+  color: var(--color-dimgray-100);
+  text-align: left;
+}
+.introduce,
+.map {
+  cursor: pointer;
+  border: 0;
+  padding: 0;
+  background-color: transparent;
+  width: 75px;
+  position: relative;
+  height: 40px;
+}
+.map {
+  width: 72px;
+}
+.navigate {
+  width: 269px;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  padding: var(--padding-4xs) 0 var(--padding-4xs) var(--padding-3xs);
+  box-sizing: border-box;
+  gap: var(--gap-31xl);
+}
+.login {
+  cursor: pointer;
+  border: 0;
+  padding: 0;
+  color: white;
+}
+.login1 {
+  background-color: transparent;
+  width: 43px;
+  position: relative;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: var(--font-inter);
+  color: var(--color-white);
+  text-align: left;
+  display: inline-block;
+  height: 19px;
+  flex-shrink: 0;
+}
+.login {
+  background-color: #6abff8;
+  width: 82px;
+  border-radius: 30px;
+  height: 39px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+.login:hover {
+  background-color: #1c9bf0;
+}
+.hamburgerbuttonIcon {
+  width: 33px;
+  position: relative;
+  height: 24px;
+  display: none;
+}
+.loginbutton {
+  width: 150px;
+  justify-content: flex-end;
+  padding: var(--padding-3xs) var(--padding-3xs) var(--padding-3xs) 0;
+  box-sizing: border-box;
+  gap: var(--gap-31xl);
+  padding-right: 15px;
+}
+.header,
+.loginbutton,
+.nav,
+.navigatecon {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.navigatecon {
+  flex: 1;
+  justify-content: flex-end;
+}
+.header,
+.nav {
+  background-color: var(--color-white);
+  box-sizing: border-box;
+}
+.nav {
+  flex: 1;
+  height: 50px;
+  overflow: hidden;
+  justify-content: space-between;
+  padding: 15px 30px;
+  gap: 0;
+}
+.header {
+  z-index: 1000;
+  width: 100%;
+  position: fixed;
+  height: 88px;
+  justify-content: center;
+  padding: 19px 0;
+  top: 0;
+}
+@media screen and (max-width: 800px) {
+  .navigate,
+  .navigate:active {
+    display: none;
+  }
+  .hamburgerbuttonIcon {
+    display: block;
+  }
+  .header {
+    display: flex;
+  }
+}
+@media screen and (max-width: 350px) {
+  .navigate {
+    padding-left: 0;
+    box-sizing: border-box;
+  }
+}
