@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Dongle&family=Merriweather&family=Nanum+Gothic:wght@700&display=swap");
 .homeHeader {
   position: relative;
   width: 100%;
@@ -29,10 +30,13 @@
   z-index: 3;
   text-align: center;
   white-space: nowrap;
+  font-family: "Nanum Gothic", sans-serif;
+  font-weight: 700;
+  font-style: normal;
 }
 
 .introImage {
-  filter: brightness(70%);
+  filter: brightness(100%);
   width: 350px;
   height: 475px;
   position: absolute;

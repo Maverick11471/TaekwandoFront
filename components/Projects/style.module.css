@@ -1,58 +1,35 @@
-.projects {
+@import url("https://fonts.googleapis.com/css2?family=Dongle&family=Merriweather&family=Nanum+Gothic:wght@700&display=swap");
+
+.cards {
+  margin-top: 20vh;
+  margin-bottom: 20vh;
   position: relative;
+}
+
+.headline {
+  margin-top: 40vh;
   color: white;
-  margin-top: 50vh;
-  padding: 10%;
-}
-
-.projectDescription {
+  align-items: center;
+  justify-content: center;
   display: flex;
-  height: 700px;
-  justify-content: space-between;
-  gap: 5%;
+  font-size: 5vw;
+
+  font-family: "Nanum Gothic", sans-serif;
+  font-weight: 700;
+  font-style: normal;
 }
 
-.imageContainer {
-  position: relative;
-  height: 100%;
-  width: 40%;
-}
+@media screen and (max-width: 767px) {
+  .headline {
+    margin-top: 70vh;
+    color: white;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    font-size: 5vw;
 
-.imageContainer img {
-  object-fit: cover;
-}
-
-.column {
-  display: flex;
-  height: 100%;
-  width: 20%;
-  font-size: 1.6vw;
-}
-
-.column:last-of-type {
-  align-items: flex-end;
-  font-size: 1vw;
-}
-
-.projectList {
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  margin-top: 200px;
-}
-
-.projectEl {
-  width: 100%;
-  color: white;
-  text-transform: uppercase;
-  font-size: 3vw;
-  border-bottom: 1px solid white;
-  display: flex;
-  justify-content: flex-end;
-}
-.projectEl h2 {
-  margin: 0px;
-  margin-top: 40px;
-  margin-bottom: 20px;
-  cursor: default;
+    font-family: "Nanum Gothic", sans-serif;
+    font-weight: 700;
+    font-style: normal;
+  }
 }

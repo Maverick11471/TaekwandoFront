@@ -35,7 +35,7 @@ function AnimatedText({ children }: { children: React.ReactNode }) {
       },
       opacity: 0,
       left: "-200px",
-      ease: "power3.Out",
+      ease: "power3.out",
     });
   }, []);
 
