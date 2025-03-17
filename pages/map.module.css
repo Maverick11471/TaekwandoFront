@@ -1,0 +1,53 @@
+.mapTitle {
+  font-size: 36px;
+  color: black;
+  font-weight: 700;
+  line-height: 46.8px;
+}
+
+.mainTitle {
+  color: #4e5968;
+  text-align: left;
+  font-family: "TossProductSans-Bold", sans-serif;
+  font-size: 24px;
+  line-height: 38px;
+  font-weight: 700;
+  position: relative;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.fullContainer {
+  padding: 196px 121px 196px 121px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.addressContainer {
+  display: flex;
+  flex-direction: row;
+  gap: 70px;
+  align-items: center;
+}
+
+.numberContainer {
+  display: flex;
+  flex-direction: row;
+  gap: 40px;
+  align-items: center;
+}
+
+.address {
+  color: #4e5968;
+  font-size: 17px;
+  line-height: 38px;
+  font-weight: 700;
+}
+
+.description {
+  color: #4e5968;
+  font-size: 17px;
+}

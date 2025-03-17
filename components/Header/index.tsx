@@ -2,23 +2,29 @@
 
 import { useCallback } from "react";
 import Image from "next/image";
-import styles from "../styles/Header.module.css";
+import styles from "./style.module.css";
+import { useRouter } from "next/navigation";
 
 interface HeaderProps {
   className?: string; // className 속성 추가
 }
 
 const Header: React.FC<HeaderProps> = ({ className }) => {
+  const router = useRouter();
   const onIntroduceClick = useCallback(() => {
-    // Please sync "Introduce" to the project
+    router.push("/introduce");
   }, []);
 
   const onMapClick = useCallback(() => {
-    // Please sync "Map" to the project
-  }, []);
+    router.push("/map");
+  }, [router]);
 
   const onLoginClick = useCallback(() => {
     // Please sync "Login" to the project
+  }, []);
+
+  const onMainClick = useCallback(() => {
+    router.push("/");
   }, []);
 
   return (
@@ -32,7 +38,9 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
             alt=""
             src="/--1@2x.png"
           />
-          <div className={styles.div}>경희대 최강 태권도</div>
+          <div className={styles.div} onClick={onMainClick}>
+            경희대 최강 태권도
+          </div>
         </button>
         <div className={styles.navigatecon}>
           <div className={styles.navigate}>

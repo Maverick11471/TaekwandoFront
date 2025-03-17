@@ -1,0 +1,76 @@
+.background {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  position: relative;
+  height: 900px;
+  text-align: center;
+  font-size: clamp(1rem, 8vw, 5rem); /* 최소 1rem, 최대 5rem */
+  line-height: 15vw;
+  color: white; /* 텍스트 색상 */
+  font-family: var(--font-noto-sans-kr);
+  z-index: 1; /* 텍스트가 배경 위에 있도록 설정 */
+}
+
+.background .image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url(/---40388424189-1@2x.png);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: top;
+  filter: brightness(0.7);
+  z-index: -1;
+}
+
+.parent {
+  position: absolute;
+  bottom: 59px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 130px;
+  transform: translateX(-50%);
+  left: 50%;
+  z-index: 1;
+}
+
+.p {
+  margin: 0;
+  white-space: nowrap;
+  line-height: 5rem;
+}
+
+.b {
+  line-height: 50px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 200px;
+  width: 100%;
+}
+
+.downArrowpngIcon {
+  width: 28px;
+  height: 14px;
+  overflow: hidden;
+  animation: moveArrow 1.5s ease-in-out infinite;
+  object-fit: cover;
+}
+
+@keyframes moveArrow {
+  0% {
+    transform: translateY(0); /* 시작 위치 */
+  }
+  50% {
+    transform: translateY(20px); /* 중간 위치 (아래로 이동) */
+  }
+  100% {
+    transform: translateY(0); /* 원래 위치로 돌아옴 */
+  }
+}
