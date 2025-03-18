@@ -1,7 +1,7 @@
 import type { NextPage } from "next";
 import Image from "next/image";
 import styles from "./style.module.css";
-import "../../app/globals.css";
+import "@/styles/globals.css";
 
 const IntroduceIntro: NextPage = () => {
   return (

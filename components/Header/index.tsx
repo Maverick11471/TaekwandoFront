@@ -20,7 +20,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
   }, [router]);
 
   const onLoginClick = useCallback(() => {
-    router.push("/login");
+    router.push("/Login");
   }, [router]);
 
   const onMainClick = useCallback(() => {

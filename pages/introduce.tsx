@@ -1,7 +1,7 @@
 import type { NextPage } from "next";
 import Image from "next/image";
 import styles from "./introduce.module.css";
-import "../app/globals.css";
+
 import IntroduceIntro from "@/components/IntroduceIntro";
 import IntroduceLayout from "@/components/IntroduceLayout";
 import Header from "@/components/Header";
