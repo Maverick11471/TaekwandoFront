@@ -13,19 +13,19 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
   const router = useRouter();
   const onIntroduceClick = useCallback(() => {
     router.push("/introduce");
-  }, []);
+  }, [router]);
 
   const onMapClick = useCallback(() => {
     router.push("/map");
   }, [router]);
 
   const onLoginClick = useCallback(() => {
-    // Please sync "Login" to the project
-  }, []);
+    router.push("/login");
+  }, [router]);
 
   const onMainClick = useCallback(() => {
     router.push("/");
-  }, []);
+  }, [router]);
 
   return (
     <div className={`${styles.header} ${className || ""}`}>
