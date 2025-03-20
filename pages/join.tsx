@@ -1,5 +1,5 @@
 import React from "react";
-import "../app/globlas.css";
+import "../app/globals.css";
 import JoinForm from "@/components/ui/join-form";
 
 function Login() {
