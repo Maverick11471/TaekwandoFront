@@ -1,31 +1,30 @@
+/* eslint-disable react/no-unescaped-entities */
+
 "use client";
 
-import { useCallback } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import styles from "./style.module.css";
 import { useRouter } from "next/navigation";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface HeaderProps {
-  className?: string; // className 속성 추가
+  className?: string;
 }
 
 const Header: React.FC<HeaderProps> = ({ className }) => {
   const router = useRouter();
-  const onIntroduceClick = useCallback(() => {
-    router.push("/introduce");
-  }, [router]);
+  const [isOpen, setIsOpen] = useState(false);
 
-  const onMapClick = useCallback(() => {
-    router.push("/map");
-  }, [router]);
-
-  const onLoginClick = useCallback(() => {
-    router.push("/Login");
-  }, [router]);
-
-  const onMainClick = useCallback(() => {
-    router.push("/");
-  }, [router]);
+  const navigate = (path: string) => {
+    router.push(path);
+    setIsOpen(false); // 메뉴 선택 시 드롭다운 닫기
+  };
 
   return (
     <div className={`${styles.header} ${className || ""}`}>
@@ -38,33 +37,66 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
             alt=""
             src="/--1@2x.png"
           />
-          <div className={styles.div} onClick={onMainClick}>
+          <div className={styles.div} onClick={() => navigate("/")}>
             경희대 최강 태권도
           </div>
         </button>
         <div className={styles.navigatecon}>
           <div className={styles.navigate}>
-            <button className={styles.introduce} onClick={onIntroduceClick}>
-              <div className={styles.div1}>{`학원 소개 `}</div>
+            <button
+              className={styles.introduce}
+              onClick={() => navigate("/introduce")}
+            >
+              <div className={styles.div1}>학원 소개</div>
             </button>
-            <button className={styles.map} onClick={onMapClick}>
+            <button className={styles.map} onClick={() => navigate("/map")}>
               <div className={styles.div1}>오시는길</div>
             </button>
           </div>
           <div className={styles.loginbutton}>
-            <button className={styles.login} onClick={onLoginClick}>
+            <button className={styles.login} onClick={() => navigate("/Login")}>
               로그인
             </button>
           </div>
-          <div>
-            <Image
-              className={styles.hamburgerbuttonIcon}
-              width={33}
-              height={24}
-              alt=""
-              src="/hamburgerbutton.svg"
-            />
-          </div>
+
+          <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+            <DropdownMenuTrigger asChild>
+              <button
+                className={styles.hamburgerbutton}
+                onClick={() => setIsOpen(!isOpen)}
+              >
+                <Image
+                  className={styles.hamburgerbuttonIcon}
+                  width={33}
+                  height={24}
+                  alt="메뉴"
+                  src="/hamburgerbutton.svg"
+                />
+              </button>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent
+              align="end"
+              sideOffset={10} // 헤더 아래로 10px 간격
+              className={styles.dropdownContent}
+              style={{
+                position: "fixed", // 절대 위치 고정
+                top: "15px", // 헤더 높이만큼 조정
+                right: "20px", // 오른쪽 정렬
+                zIndex: 1000, // 최상단 레이어
+              }}
+            >
+              <DropdownMenuItem onClick={() => navigate("/introduce")}>
+                학원 소개
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/map")}>
+                오시는길
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/Login")}>
+                로그인
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </div>

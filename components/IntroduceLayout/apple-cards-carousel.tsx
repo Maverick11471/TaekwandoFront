@@ -17,13 +17,13 @@ import Image, { ImageProps } from "next/image";
 import { useOutsideClick } from "./use-outside-click";
 
 interface CarouselProps {
-  items: JSX.Element[];
+  items: React.ReactNode[];
   initialScroll?: number;
 }
 
 type Card = {
   src: string;
-  title: string;
+  title: React.ReactNode; // string -> React.ReactNode로 변경
   category: string;
   content: React.ReactNode;
 };
@@ -164,7 +164,7 @@ export const Card = ({
 }) => {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { onCardClose, currentIndex } = useContext(CarouselContext);
+  const { onCardClose } = useContext(CarouselContext);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -237,7 +237,7 @@ export const Card = ({
         )}
       </AnimatePresence>
       <motion.button
-        layoutId={layout ? `card-${card.title}` : undefined}
+        layoutId={layout ? `card-${index}-${card.title}` : undefined}
         onClick={handleOpen}
         className="rounded-3xl bg-gray-100 dark:bg-neutral-900 h-80 w-56 md:h-[40rem] md:w-96 overflow-hidden flex flex-col items-start justify-start relative z-10"
       >
@@ -250,7 +250,7 @@ export const Card = ({
             {card.category}
           </motion.p>
           <motion.p
-            layoutId={layout ? `title-${card.title}` : undefined}
+            layoutId={layout ? `title-${index}-${card.title}` : undefined}
             className="text-white text-xl md:text-3xl font-semibold max-w-xs text-left [text-wrap:balance] font-sans mt-2"
           >
             {card.title}
@@ -258,7 +258,7 @@ export const Card = ({
         </div>
         <BlurImage
           src={card.src}
-          alt={card.title}
+          alt={typeof card.title === "string" ? card.title : "Card Image"}
           fill
           className="object-cover absolute z-10 inset-0"
         />

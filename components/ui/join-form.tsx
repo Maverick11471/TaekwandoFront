@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { cn } from "@/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -13,7 +13,6 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
@@ -23,7 +22,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-import { format } from "date-fns";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,36 +37,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 
-const FormSchema = z.object({
-  email: z.string().email({ message: "유효한 이메일 주소를 입력해주세요" }),
-  emailVerificationCode: z
-    .string()
-    .min(6, { message: "인증번호는 6자리입니다." }),
-  username: z
-    .string()
-    .min(2, { message: "사용자 이름은 2자 이상이어야 합니다" })
-    .max(20),
-  password: z
-    .string()
-    .min(8, { message: "비밀번호는 8자 이상이어야 합니다" })
-    .regex(/^(?=.*\d)(?=.*[a-z])(?=.*[\W_]).{8,}$/, {
-      message: "비밀번호는 숫자, 영문자, 특수문자를 포함해야 합니다",
-    }),
-  secondPassword: z
-    .string()
-    .min(8, { message: "비밀번호는 8자 이상이어야 합니다" })
-    .regex(/^(?=.*\d)(?=.*[a-z])(?=.*[\W_]).{8,}$/, {
-      message: "비밀번호는 숫자, 영문자, 특수문자를 포함해야 합니다",
-    }),
-  dob: z
-    .date({
-      required_error: "생년월일을 입력해 주세요.",
-    })
-    .refine((date) => date <= new Date(), {
-      message: "생년월일은 현재 날짜보다 이전이어야 합니다",
-    }),
-});
-
 export default function InputForm({
   className,
   ...props
@@ -81,6 +49,51 @@ export default function InputForm({
   const [showVerificationField, setShowVerificationField] = useState(false); // 인증번호 필드 표시 상태
   const [showPassword, setShowPassword] = useState(false); // 비밀번호 보기/숨기기 상태
   const [showSecondPassword, setShowSecondPassword] = useState(false); // 비밀번호 보기/숨기기 상태
+
+  const FormSchema = z.object({
+    email: z.string().email({ message: "유효한 이메일 주소를 입력해주세요" }),
+    emailVerificationCode: z.string().superRefine((value, ctx) => {
+      if (!isEmailFieldDisabled) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom, // 커스텀 오류 코드
+          message: "인증번호 전송 버튼을 먼저 눌러주세요.", // 오류 메시지
+        });
+      } else if (value.length != 6) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "인증번호는 6자리 숫자입니다.",
+        });
+      } else if (!/^\d+$/.test(value)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "인증번호는 숫자로만 입력해주세요.",
+        });
+      }
+    }),
+    username: z
+      .string()
+      .min(2, { message: "사용자 이름은 2자 이상이어야 합니다" })
+      .max(20),
+    password: z
+      .string()
+      .min(8, { message: "비밀번호는 8자 이상이어야 합니다" })
+      .regex(/^(?=.*\d)(?=.*[a-z])(?=.*[\W_]).{8,}$/, {
+        message: "비밀번호는 숫자, 영문자, 특수문자를 포함해야 합니다",
+      }),
+    secondPassword: z
+      .string()
+      .min(8, { message: "비밀번호는 8자 이상이어야 합니다" })
+      .regex(/^(?=.*\d)(?=.*[a-z])(?=.*[\W_]).{8,}$/, {
+        message: "비밀번호는 숫자, 영문자, 특수문자를 포함해야 합니다",
+      }),
+    dob: z
+      .date({
+        required_error: "생년월일을 입력해 주세요.",
+      })
+      .refine((date) => date <= new Date(), {
+        message: "생년월일은 현재 날짜보다 이전이어야 합니다",
+      }),
+  });
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -95,13 +108,18 @@ export default function InputForm({
     },
   });
 
+  useEffect(() => {
+    // isEmailFieldDisabled 상태가 변경될 때마다 유효성 검사 트리거
+    form.trigger("emailVerificationCode");
+  }, [isEmailFieldDisabled, form]);
+
   // 토글 핸들러 추가
   const toggleShowPassword = () => {
     setShowPassword((prev) => !prev);
   };
 
   const toggleShowSecondPassword = () => {
-    setShowPassword((prev) => !prev);
+    setShowSecondPassword((prev) => !prev);
   };
 
   // 이메일 유효성 검사
@@ -119,7 +137,8 @@ export default function InputForm({
   useEffect(() => {
     const verificationCodeSchema = z
       .string()
-      .length(6, { message: "6자리 숫자를 입력해주세요" });
+      .length(6, { message: "6자리 숫자를 입력해주세요" })
+      .regex(/^\d+$/, { message: "인증번호는 숫자로만 입력해주세요" });
     const result = verificationCodeSchema.safeParse(verificationCodeValue);
     setIsVerificationCodeValid(result.success); // 인증번호 유효성 상태 업데이트
   }, [verificationCodeValue]);
@@ -135,7 +154,7 @@ export default function InputForm({
     setShowVerificationField(true); // 인증번호 필드 표시
   };
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
+  function onSubmit() {
     setIsDialogOpen(true);
   }
   const router = useRouter();
@@ -151,7 +170,10 @@ export default function InputForm({
   };
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div
+      className={cn("flex flex-col gap-6 mb-16 mt-10", className)}
+      {...props}
+    >
       <Card>
         <CardContent>
           {/* 아코디언 */}
@@ -202,13 +224,21 @@ export default function InputForm({
                 disabled={isEmailFieldDisabled}
               />
               {isEmailValid && !isEmailFieldDisabled && (
-                <Button
-                  type="button"
-                  onClick={handleSendVerificationCode}
-                  className="w-full"
-                >
-                  인증번호 전송
-                </Button>
+                <div>
+                  <Button
+                    type="button"
+                    onClick={handleSendVerificationCode}
+                    className="w-full"
+                  >
+                    인증번호 전송
+                  </Button>
+                  {/* 인증번호 전송 버튼 밑에 오류 메시지 표시 */}
+                  {form.formState.errors.emailVerificationCode && (
+                    <p className="text-sm text-red-500">
+                      {form.formState.errors.emailVerificationCode.message}
+                    </p>
+                  )}
+                </div>
               )}
 
               {/* 이메일 인증번호 필드 */}
@@ -290,7 +320,7 @@ export default function InputForm({
                 name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>사용자 이름</FormLabel>
+                    <FormLabel>사용자 이름 (아이)</FormLabel>
                     <FormControl>
                       <Input placeholder="홍길동" {...field} />
                     </FormControl>
@@ -465,11 +495,11 @@ export default function InputForm({
                     </AlertDialogCancel>
                     <AlertDialogAction
                       type="button"
-                      onClick={form.handleSubmit((data) => {
+                      onClick={form.handleSubmit((formData) => {
                         toast(
                           `관장님께 회원가입 요청이 전송되었습니다. 승인 후 사용 가능합니다.`,
                           {
-                            description: `Username: ${data.username}`,
+                            description: `Username: ${formData.username}`,
                           }
                         );
                         router.push("/");

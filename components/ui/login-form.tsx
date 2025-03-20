@@ -12,7 +12,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo } from "react";
 
 export function LoginForm({
   className,
@@ -26,7 +25,6 @@ export function LoginForm({
     router.push("/");
   };
 
-  const initialValues = useMemo(() => ({ email: "", password: "" }), []);
   return (
     <Card className={cn("w-full max-w-sm", className)} {...props}>
       <CardHeader>

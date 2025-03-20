@@ -1,7 +1,5 @@
-import Image from "next/image";
 import React from "react";
 import { Timeline } from "./timeline";
-import styles from "./style.module.css";
 
 export default function TimelineDemo() {
   const data = [

@@ -1,12 +1,11 @@
 import type { NextPage } from "next";
-import Image from "next/image";
-import styles from "./introduce.module.css";
 
 import IntroduceIntro from "@/components/IntroduceIntro";
 import IntroduceLayout from "@/components/IntroduceLayout";
-import Header from "@/components/Header";
+
 import MasterIntro from "@/components/MasterIntro";
 import Footer from "@/components/Footer";
+import Header from "@/components/Header";
 
 const Background: NextPage = () => {
   return (

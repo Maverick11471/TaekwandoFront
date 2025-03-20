@@ -1,9 +1,8 @@
 import type { NextPage } from "next";
-import Image from "next/image";
+
 import styles from "./map.module.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import "@/styles/globals.css";
 
 const Map1: NextPage = () => {
   return (

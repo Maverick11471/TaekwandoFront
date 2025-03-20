@@ -12,6 +12,43 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Eye, EyeOff } from "lucide-react";
+
+const FormSchema = z
+  .object({
+    email: z.string().email({ message: "유효한 이메일 주소를 입력해주세요" }),
+    username: z
+      .string()
+      .min(2, { message: "이름은 2자 이상이어야 합니다" })
+      .max(20),
+    emailVerificationCode: z
+      .string()
+      .length(6, { message: "인증번호는 6자리 숫자입니다." })
+      .regex(/^\d+$/, { message: "인증번호는 숫자로만 입력해주세요." }),
+    newPassword: z
+      .string()
+      .min(8, { message: "비밀번호는 8자 이상이어야 합니다" })
+      .superRefine((value, ctx) => {
+        const hasNumber = /\d/.test(value); // 숫자 포함 여부
+        const hasLetter = /[a-zA-Z]/.test(value); // 영문자 포함 여부
+        const hasSpecialChar = /[\W_]/.test(value); // 특수문자 포함 여부
+
+        if (!hasNumber || !hasLetter || !hasSpecialChar) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "비밀번호는 숫자, 영문자, 특수문자를 포함해야 합니다",
+          });
+        }
+      }),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "비밀번호가 일치하지 않습니다",
+    path: ["confirmPassword"], // 오류 메시지를 confirmPassword 필드에 표시
+  });
 
 export default function FindProfileForm({
   className,
@@ -20,51 +57,56 @@ export default function FindProfileForm({
   const [isMounted, setIsMounted] = useState(false);
   const [showVerification, setShowVerification] = useState(false);
   const [isVerified, setIsVerified] = useState(false); // 인증 완료 상태 추가
-  const [email, setEmail] = useState("");
-  const [username, setUsername] = useState("");
-  const [newPassword, setNewPassword] = useState(""); // 새 비밀번호 상태
-  const [confirmPassword, setConfirmPassword] = useState(""); // 비밀번호 확인 상태
-  const [passwordError, setPasswordError] = useState(""); // 오류 메시지 상태
+  const [showPassword, setShowPassword] = useState(false); // 비밀번호 보기/숨기기 상태
+
+  const router = useRouter();
+
+  const form = useForm<z.infer<typeof FormSchema>>({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {
+      email: "",
+      username: "",
+      emailVerificationCode: "",
+      newPassword: "",
+      confirmPassword: "",
+    },
+  });
+
+  const toggleShowPassword = () => {
+    setShowPassword((prev) => !prev); // 비밀번호 보기/숨기기 상태 토글
+  };
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  const router = useRouter();
-
   if (!isMounted) {
     return null;
   }
 
-  const handleSendVerification = (e: React.FormEvent) => {
+  const handleSendVerification = async (e: React.FormEvent) => {
     e.preventDefault();
-    // 실제로는 API 호출로 인증번호 전송
-    setShowVerification(true);
+    const isValid = await form.trigger("email"); // 이메일 필드의 유효성 검사
+    if (isValid) {
+      // 실제로는 API 호출로 인증번호 전송
+      setShowVerification(true);
+    }
   };
 
-  const handleVerifyCode = (e: React.FormEvent) => {
+  const handleVerifyCode = async (e: React.FormEvent) => {
     e.preventDefault();
-    // 실제로는 API를 통해 인증번호 검증
-    setIsVerified(true); // 인증 성공 시 상태 변경
+    const isValid = await form.trigger("emailVerificationCode"); // 인증번호 필드의 유효성 검사
+    if (isValid) {
+      // 실제로는 API를 통해 인증번호 검증
+      setIsVerified(true); // 인증 성공 시 상태 변경
+    }
   };
 
-  const handlePasswordReset = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // 비밀번호 유효성 검사
-    if (newPassword !== confirmPassword) {
-      setPasswordError("비밀번호가 일치하지 않습니다");
-      return;
-    }
-
-    if (newPassword.length < 8) {
-      setPasswordError("비밀번호는 8자 이상이어야 합니다");
-      return;
-    }
-
-    // 여기에 실제 비밀번호 재설정 API 호출 추가
+  const onSubmit = (data: z.infer<typeof FormSchema>) => {
+    console.log("Form Data:", data);
+    // 여기에 API 호출 또는 비밀번호 재설정 로직 추가
     alert("비밀번호가 성공적으로 변경되었습니다!");
-    await router.push("/Login"); // await 추가
+    router.push("/Login");
   };
 
   return (
@@ -93,10 +135,14 @@ export default function FindProfileForm({
                     type="email"
                     placeholder="m@naver.com"
                     required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    {...form.register("email")}
                     disabled={showVerification}
                   />
+                  {form.formState.errors.email && (
+                    <p className="text-sm text-red-500">
+                      {form.formState.errors.email.message}
+                    </p>
+                  )}
                 </div>
 
                 <div className="grid gap-3">
@@ -105,10 +151,14 @@ export default function FindProfileForm({
                     id="username"
                     type="text"
                     required
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    {...form.register("username")}
                     disabled={showVerification}
                   />
+                  {form.formState.errors.username && (
+                    <p className="text-sm text-red-500">
+                      {form.formState.errors.username.message}
+                    </p>
+                  )}
                 </div>
 
                 {!showVerification && (
@@ -131,7 +181,13 @@ export default function FindProfileForm({
                     type="text"
                     placeholder="6자리 숫자 입력"
                     required
+                    {...form.register("emailVerificationCode")}
                   />
+                  {form.formState.errors.emailVerificationCode && (
+                    <p className="text-sm text-red-500">
+                      {form.formState.errors.emailVerificationCode.message}
+                    </p>
+                  )}
                 </div>
                 <Button type="submit" className="w-full">
                   인증번호 확인
@@ -142,39 +198,46 @@ export default function FindProfileForm({
 
           {/* 3단계: 비밀번호 재설정 */}
           {isVerified && (
-            <form onSubmit={handlePasswordReset} className="mt-6">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6">
               <div className="flex flex-col gap-6">
                 <div className="grid gap-3">
                   <Label htmlFor="newPassword">새 비밀번호</Label>
                   <Input
                     id="newPassword"
-                    type="password"
+                    type={showPassword ? "text" : "password"} // 동적 타입 변경
                     required
-                    value={newPassword}
-                    onChange={(e) => {
-                      setNewPassword(e.target.value);
-                      setPasswordError(""); // 오류 메시지 초기화
-                    }}
+                    {...form.register("newPassword")}
                   />
+                  {form.formState.errors.newPassword && (
+                    <p className="text-sm text-red-500">
+                      {form.formState.errors.newPassword.message}
+                    </p>
+                  )}
                 </div>
 
                 <div className="grid gap-3">
                   <Label htmlFor="confirmPassword">비밀번호 확인</Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => {
-                      setConfirmPassword(e.target.value);
-                      setPasswordError(""); // 오류 메시지 초기화
-                    }}
-                  />
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      type={showPassword ? "text" : "password"} // 동적 타입 변경
+                      required
+                      {...form.register("confirmPassword")}
+                    />
+                    <button
+                      type="button"
+                      onClick={toggleShowPassword}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2"
+                    >
+                      {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
+                    </button>
+                  </div>
+                  {form.formState.errors.confirmPassword && (
+                    <p className="text-sm text-red-500">
+                      {form.formState.errors.confirmPassword.message}
+                    </p>
+                  )}
                 </div>
-
-                {passwordError && (
-                  <p className="text-red-500 text-sm">{passwordError}</p>
-                )}
 
                 <Button type="submit" className="w-full">
                   비밀번호 재설정

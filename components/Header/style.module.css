@@ -98,12 +98,18 @@
 .login:hover {
   background-color: #1c9bf0;
 }
-.hamburgerbuttonIcon {
-  width: 33px;
-  position: relative;
-  height: 24px;
-  display: none;
+
+.hamburgerbutton {
+  padding: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
+
+.hamburgerbutton:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
 .loginbutton {
   width: 150px;
   justify-content: flex-end;
@@ -147,21 +153,19 @@
   top: 0;
   border-bottom: 1px solid #ccc;
 }
-@media screen and (max-width: 800px) {
-  .navigate,
-  .navigate:active {
+/* 모바일에서만 햄버거 버튼 표시 */
+@media (min-width: 768px) {
+  .hamburgerbutton {
     display: none;
   }
-  .hamburgerbuttonIcon {
-    display: block;
-  }
-  .header {
-    display: flex;
-  }
 }
-@media screen and (max-width: 350px) {
+
+/* 데스크톱 네비게이션 숨기기 */
+@media (max-width: 767px) {
   .navigate {
-    padding-left: 0;
-    box-sizing: border-box;
+    display: none;
+  }
+  .loginbutton {
+    display: none;
   }
 }
