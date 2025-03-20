@@ -1,42 +1,25 @@
+.fullContainer {
+  padding: 150px 20px 100px; /* 상단 패딩을 늘려 Header와의 간격 확보 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 20px; /* 요소 사이의 간격 */
+}
+
 .mapTitle {
-  font-size: 36px;
+  font-size: 40px;
   color: black;
   font-weight: 700;
   line-height: 46.8px;
+  margin-bottom: 20px; /* mapTitle과 mainTitle 사이의 간격 추가 */
 }
 
-.mainTitle {
-  color: #4e5968;
-  text-align: left;
-  font-family: "TossProductSans-Bold", sans-serif;
-  font-size: 24px;
-  line-height: 38px;
-  font-weight: 700;
-  position: relative;
-  align-self: stretch;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-}
-
-.fullContainer {
-  padding: 196px 121px 196px 121px;
+.addressContainer,
+.numberContainer {
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
-
-.addressContainer {
-  display: flex;
-  flex-direction: row;
-  gap: 70px;
-  align-items: center;
-}
-
-.numberContainer {
-  display: flex;
-  flex-direction: row;
-  gap: 40px;
   align-items: center;
 }
 
@@ -50,4 +33,16 @@
 .description {
   color: #4e5968;
   font-size: 17px;
+}
+
+/* 모바일 대응 */
+@media (max-width: 768px) {
+  .mapTitle {
+    margin-bottom: 15px; /* 모바일에서 간격 조정 */
+  }
+
+  .address,
+  .description {
+    font-size: 15px;
+  }
 }

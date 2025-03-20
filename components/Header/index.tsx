@@ -79,12 +79,6 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
               align="end"
               sideOffset={10} // 헤더 아래로 10px 간격
               className={styles.dropdownContent}
-              style={{
-                position: "fixed", // 절대 위치 고정
-                top: "15px", // 헤더 높이만큼 조정
-                right: "20px", // 오른쪽 정렬
-                zIndex: 1000, // 최상단 레이어
-              }}
             >
               <DropdownMenuItem onClick={() => navigate("/introduce")}>
                 학원 소개

@@ -30,5 +30,8 @@
   font-size: var(--h6-size);
   color: var(--second-text-color);
   font-family: var(--h6);
-  padding: 30px 0 30px 0;
+  padding: 30px 0;
+  position: fixed;
+  bottom: 0;
+  left: 0;
 }

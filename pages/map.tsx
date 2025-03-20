@@ -1,16 +1,16 @@
 import type { NextPage } from "next";
-
 import styles from "./map.module.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import "../app/globals.css";
 
-const Map1: NextPage = () => {
+const Map: NextPage = () => {
   return (
     <>
       <Header />
       <div className={styles.fullContainer}>
         <div className={styles.mapTitle}>오시는 길</div>
-        <div className={styles.mainTitle}>경희대 최강 태권도</div>
+
         <div className={styles.addressContainer}>
           <div className={styles.address}>주소</div>
           <div className={styles.description}>
@@ -27,4 +27,4 @@ const Map1: NextPage = () => {
   );
 };
 
-export default Map1;
+export default Map;
