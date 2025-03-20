@@ -106,7 +106,7 @@ export default function FindProfileForm({
     console.log("Form Data:", data);
     // 여기에 API 호출 또는 비밀번호 재설정 로직 추가
     alert("비밀번호가 성공적으로 변경되었습니다!");
-    router.push("/Login");
+    router.push("/login");
   };
 
   return (

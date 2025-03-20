@@ -54,7 +54,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
             </button>
           </div>
           <div className={styles.loginbutton}>
-            <button className={styles.login} onClick={() => navigate("/Login")}>
+            <button className={styles.login} onClick={() => navigate("/login")}>
               로그인
             </button>
           </div>
@@ -86,7 +86,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
               <DropdownMenuItem onClick={() => navigate("/map")}>
                 오시는길
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/Login")}>
+              <DropdownMenuItem onClick={() => navigate("/login")}>
                 로그인
               </DropdownMenuItem>
             </DropdownMenuContent>

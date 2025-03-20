@@ -1,4 +1,5 @@
 import React from "react";
+import "../app/globlas.css";
 
 import FindProfileForm from "@/components/ui/findProfile-form";
 
