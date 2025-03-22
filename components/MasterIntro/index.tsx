@@ -78,7 +78,7 @@ export default function TimelineDemo() {
       title: "2003",
       content: (
         <div>
-          <p className="text-white dark:text-neutral-200 text-lg md:text-xl font-normal mb-8">
+          <p className="text-white dark:text-neutral-200 text-lg md:text-xl font-normal mb-30">
             우석대총장기 전국 품새대회 단체전 금메달, 개인전 은메달
           </p>
         </div>
