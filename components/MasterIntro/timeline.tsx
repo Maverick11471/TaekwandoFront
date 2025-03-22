@@ -31,7 +31,7 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
   const translateYTransform = useTransform(
     scrollYProgress,
     [0, 1],
-    [0, height]
+    [150, height]
   );
 
   return (
