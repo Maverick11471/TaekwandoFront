@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import gsap from "gsap";
 import styles from "./style.module.css";
@@ -24,7 +24,7 @@ export default function Index() {
 function AnimatedText({ children }: { children: React.ReactNode }) {
   const text = useRef(null);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
     gsap.from(text.current, {
       scrollTrigger: {

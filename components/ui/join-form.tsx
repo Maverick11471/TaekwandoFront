@@ -36,6 +36,8 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { mailCheck } from "../../app/apis/memberApis";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 
 export default function InputForm({
   className,
@@ -49,9 +51,12 @@ export default function InputForm({
   const [showVerificationField, setShowVerificationField] = useState(false); // 인증번호 필드 표시 상태
   const [showPassword, setShowPassword] = useState(false); // 비밀번호 보기/숨기기 상태
   const [showSecondPassword, setShowSecondPassword] = useState(false); // 비밀번호 보기/숨기기 상태
+  const dispatch = useAppDispatch();
+  const emailState = useAppSelector((state) => state.member.email);
 
   const FormSchema = z.object({
     email: z.string().email({ message: "유효한 이메일 주소를 입력해주세요" }),
+
     emailVerificationCode: z.string().superRefine((value, ctx) => {
       if (!isEmailFieldDisabled) {
         ctx.addIssue({
@@ -86,7 +91,7 @@ export default function InputForm({
       .regex(/^(?=.*\d)(?=.*[a-z])(?=.*[\W_]).{8,}$/, {
         message: "비밀번호는 숫자, 영문자, 특수문자를 포함해야 합니다",
       }),
-    dob: z
+    birthday: z
       .date({
         required_error: "생년월일을 입력해 주세요.",
       })
@@ -104,7 +109,7 @@ export default function InputForm({
       username: "",
       password: "",
       secondPassword: "",
-      dob: undefined,
+      birthday: undefined,
     },
   });
 
@@ -169,6 +174,25 @@ export default function InputForm({
     }
   };
 
+  const [isEmailAvailable, setIsEmailAvailable] = useState(false);
+  const handleEmailDuplicateCheck = async () => {
+    const email = form.getValues("email");
+
+    try {
+      const response = await dispatch(mailCheck({ email })).unwrap();
+
+      if (response.memberEmailCheckMsg === "available email") {
+        toast.success("사용 가능한 이메일입니다.");
+        handleSendVerificationCode();
+      } else if (response.memberEmailCheckMsg === "invalid email") {
+        toast.error("이미 사용중인 이메일입니다.");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("서버 검증에 실패했습니다.");
+    }
+  };
+
   return (
     <div
       className={cn("flex flex-col gap-6 mb-16 mt-10", className)}
@@ -223,14 +247,18 @@ export default function InputForm({
                 )}
                 disabled={isEmailFieldDisabled}
               />
+
               {isEmailValid && !isEmailFieldDisabled && (
                 <div>
                   <Button
                     type="button"
-                    onClick={handleSendVerificationCode}
+                    onClick={handleEmailDuplicateCheck}
                     className="w-full"
+                    disabled={!isEmailValid || isEmailAvailable}
                   >
-                    인증번호 전송
+                    {isEmailAvailable
+                      ? "인증번호 전송 완료"
+                      : "이메일 중복 확인"}
                   </Button>
                   {/* 인증번호 전송 버튼 밑에 오류 메시지 표시 */}
                   {form.formState.errors.emailVerificationCode && (
@@ -332,7 +360,7 @@ export default function InputForm({
               {/* {생년월일} */}
               <FormField
                 control={form.control}
-                name="dob"
+                name="birthday"
                 render={({ field }) => {
                   const currentDate = field.value || new Date();
                   const currentYear = currentDate.getFullYear();

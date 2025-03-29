@@ -1,4 +1,4 @@
-import React, { useLayoutEffect } from "react";
+import React, { useEffect } from "react";
 import { BentoGrid, BentoGridItem } from "./bento-grid";
 import {
   IconMoodSmileBeam,
@@ -42,7 +42,7 @@ export default function BentoGridDemo() {
 function AnimatedCard({ children }: { children: React.ReactNode }) {
   const card = useRef<HTMLDivElement | null>(null);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (card.current) {
       gsap.from(card.current, {
         opacity: 0,
@@ -65,7 +65,7 @@ function AnimatedCard({ children }: { children: React.ReactNode }) {
 function AnimatedHeadline({ children }: { children: React.ReactNode }) {
   const card = useRef<HTMLDivElement | null>(null);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (card.current) {
       gsap.from(card.current, {
         opacity: -20,

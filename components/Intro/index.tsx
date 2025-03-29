@@ -1,5 +1,5 @@
 "use client";
-import React, { useLayoutEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import styles from "./style.module.css";
 import Image from "next/image";
 import gsap from "gsap";
@@ -9,7 +9,7 @@ export default function Index() {
   const background = useRef(null);
   const introImage = useRef(null);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
 
     const timeline = gsap.timeline({
