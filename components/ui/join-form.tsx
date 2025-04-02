@@ -36,34 +36,70 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { mailCheck } from "../../app/apis/memberApis";
+import {
+  mailCheck,
+  sendEmail,
+  emailVericationCodeCheck,
+  join,
+} from "../../app/apis/memberApis";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+
+const Spinner = () => (
+  <svg
+    className="animate-spin h-5 w-5 text-white"
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+  >
+    <circle
+      className="opacity-25"
+      cx="12"
+      cy="12"
+      r="10"
+      stroke="currentColor"
+      strokeWidth="4"
+    ></circle>
+    <path
+      className="opacity-75"
+      fill="currentColor"
+      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+    ></path>
+  </svg>
+);
 
 export default function InputForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isEmailValid, setIsEmailValid] = useState(false);
-  const [isEmailFieldDisabled, setIsEmailFieldDisabled] = useState(false);
-  const [isVerificationCodeValid, setIsVerificationCodeValid] = useState(false); // 인증번호 유효성 상태
-  const [isVerificationComplete, setIsVerificationComplete] = useState(false); // 인증 완료 상태
-  const [showVerificationField, setShowVerificationField] = useState(false); // 인증번호 필드 표시 상태
-  const [showPassword, setShowPassword] = useState(false); // 비밀번호 보기/숨기기 상태
-  const [showSecondPassword, setShowSecondPassword] = useState(false); // 비밀번호 보기/숨기기 상태
+  const router = useRouter();
   const dispatch = useAppDispatch();
-  const emailState = useAppSelector((state) => state.member.email);
+  const [states, setStates] = useState({
+    isDialogOpen: false,
+    isEmailValid: false,
+    isEmailFieldDisabled: false,
+    isVerificationComplete: false,
+    showVerificationField: false,
+    showPassword: false,
+    showSecondPassword: false,
+    isNotVerificationEmail: null as boolean | null,
+    isSending: false,
+    verificationCode: "",
+  });
 
   const FormSchema = z.object({
     email: z.string().email({ message: "유효한 이메일 주소를 입력해주세요" }),
-
-    emailVerificationCode: z.string().superRefine((value, ctx) => {
-      if (!isEmailFieldDisabled) {
+    emailVerificationCode: z.string().superRefine(function (
+      this: { context: { isSendMail?: boolean } },
+      value,
+      ctx
+    ) {
+      const context = this.context;
+      if (context?.isSendMail === false) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom, // 커스텀 오류 코드
-          message: "인증번호 전송 버튼을 먼저 눌러주세요.", // 오류 메시지
+          code: z.ZodIssueCode.custom,
+          message: "이메일 인증을 먼저 완료해주세요.",
         });
-      } else if (value.length != 6) {
+      } else if (value.length !== 6) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "인증번호는 6자리 숫자입니다.",
@@ -111,85 +147,125 @@ export default function InputForm({
       secondPassword: "",
       birthday: undefined,
     },
+    context: {
+      isSendMail: states.showVerificationField,
+    },
   });
 
-  useEffect(() => {
-    // isEmailFieldDisabled 상태가 변경될 때마다 유효성 검사 트리거
-    form.trigger("emailVerificationCode");
-  }, [isEmailFieldDisabled, form]);
-
-  // 토글 핸들러 추가
-  const toggleShowPassword = () => {
-    setShowPassword((prev) => !prev);
-  };
-
-  const toggleShowSecondPassword = () => {
-    setShowSecondPassword((prev) => !prev);
-  };
-
-  // 이메일 유효성 검사
   const emailValue = form.watch("email");
 
   useEffect(() => {
     const emailSchema = z.string().email();
     const result = emailSchema.safeParse(emailValue);
-    setIsEmailValid(result.success); // 이메일 유효성 상태 업데이트
+    setStates((prev) => ({ ...prev, isEmailValid: result.success }));
   }, [emailValue]);
 
-  // 인증번호 유효성 검사
-  const verificationCodeValue = form.watch("emailVerificationCode");
+  const handleEmailVerification = async () => {
+    setStates((prev) => ({ ...prev, isSending: true }));
 
-  useEffect(() => {
-    const verificationCodeSchema = z
-      .string()
-      .length(6, { message: "6자리 숫자를 입력해주세요" })
-      .regex(/^\d+$/, { message: "인증번호는 숫자로만 입력해주세요" });
-    const result = verificationCodeSchema.safeParse(verificationCodeValue);
-    setIsVerificationCodeValid(result.success); // 인증번호 유효성 상태 업데이트
-  }, [verificationCodeValue]);
+    try {
+      const email = form.getValues("email");
 
-  const handleVerifyCode = () => {
-    setIsVerificationComplete(true); // 인증 완료 상태로 변경
-    toast.success("인증이 완료되었습니다.");
+      // 이메일 중복 검사
+      const checkRes = await dispatch(mailCheck({ email })).unwrap();
+      if (checkRes.memberEmailCheckMsg === "invalid email") {
+        setStates((prev) => ({ ...prev, isNotVerificationEmail: false }));
+        toast.error("이미 사용중인 이메일입니다.");
+        return;
+      }
+
+      // 인증번호 전송
+      const sendRes = await dispatch(sendEmail({ email })).unwrap();
+      if (sendRes.sendEmailMsg === "SendEmail Success") {
+        setStates((prev) => ({
+          ...prev,
+          isEmailFieldDisabled: true,
+          showVerificationField: true,
+          isNotVerificationEmail: true,
+          verificationCode: sendRes.verificationCode,
+        }));
+        toast.success("인증번호가 전송되었습니다.");
+      }
+    } catch (error) {
+      toast.error("서버 처리 중 오류 발생");
+    } finally {
+      setStates((prev) => ({ ...prev, isSending: false }));
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    const email = form.getValues("email");
+    const enteredCode = form.getValues("emailVerificationCode");
+    const emailVericationCodeCheckResult = await dispatch(
+      emailVericationCodeCheck({ enteredCode, email })
+    ).unwrap();
+    console.log(emailVericationCodeCheck);
+    if (emailVericationCodeCheckResult) {
+      setStates((prev) => ({ ...prev, isVerificationComplete: true }));
+      toast.success("인증이 완료되었습니다.");
+    } else {
+      toast.error("인증번호가 일치하지 않습니다.");
+    }
+  };
+
+  const handleSubmit = async (data: z.infer<typeof FormSchema>) => {
+    if (!states.isVerificationComplete) {
+      toast.error("이메일 인증을 완료해주세요.");
+      return;
+    }
+    setStates((prev) => ({ ...prev, isDialogOpen: true }));
+  };
+
+  // 토글 핸들러 추가
+  const toggleShowPassword = () => {
+    setStates((prev) => ({ ...prev, showPassword: !prev.showPassword }));
+  };
+
+  const toggleShowSecondPassword = () => {
+    setStates((prev) => ({
+      ...prev,
+      showSecondPassword: !prev.showSecondPassword,
+    }));
   };
 
   const handleSendVerificationCode = () => {
-    toast.success("인증번호가 전송되었습니다.");
-    setIsEmailFieldDisabled(true);
-    setShowVerificationField(true); // 인증번호 필드 표시
+    setStates((prev) => ({ ...prev, isEmailFieldDisabled: true }));
+    setStates((prev) => ({ ...prev, showVerificationField: true }));
   };
 
   function onSubmit() {
-    setIsDialogOpen(true);
+    setStates((prev) => ({ ...prev, isDialogOpen: true }));
   }
-  const router = useRouter();
 
   const handleValidation = async () => {
     const isValid = await form.trigger();
+
+    if (!states.isVerificationComplete) {
+      toast.error("이메일 인증을 완료해주세요.");
+      return;
+    }
+
     if (isValid) {
-      setIsDialogOpen(true);
+      setStates((prev) => ({ ...prev, isDialogOpen: true }));
     } else {
-      form.trigger();
       toast.error("필수 입력 항목을 확인해주세요");
     }
   };
 
-  const [isEmailAvailable, setIsEmailAvailable] = useState(false);
-  const handleEmailDuplicateCheck = async () => {
-    const email = form.getValues("email");
-
+  const handleConfirm = async () => {
     try {
-      const response = await dispatch(mailCheck({ email })).unwrap();
+      const { emailVerificationCode, ...values } = form.getValues();
+      const payload = {
+        ...values,
+        birthday: values.birthday.toISOString().split("T")[0], // YYYY-MM-DD 형식
+      };
 
-      if (response.memberEmailCheckMsg === "available email") {
-        toast.success("사용 가능한 이메일입니다.");
-        handleSendVerificationCode();
-      } else if (response.memberEmailCheckMsg === "invalid email") {
-        toast.error("이미 사용중인 이메일입니다.");
-      }
+      const result = await dispatch(join(payload)).unwrap();
+
+      toast.success("회원가입 요청이 전송되었습니다");
+      router.push("/");
     } catch (error) {
-      console.log(error);
-      toast.error("서버 검증에 실패했습니다.");
+      toast.error("가입 처리 중 오류 발생");
     }
   };
 
@@ -211,11 +287,11 @@ export default function InputForm({
               >
                 <AccordionItem value="item-1">
                   <AccordionTrigger>[필독] 회원가입 설명</AccordionTrigger>
-                  <AccordionContent>
+                  <AccordionContent className="pb-0">
                     회원가입은 부모님께서 도와주시길 권장드립니다. 이유는 아이가
                     미션을 성공 후 부모님 서명 (2차 비밀번호)를 받아야 관장님께
                     전달되는 시스템으로 설계되었습니다. <br />
-                    최종 포인트 적립은 관장님 승인 후 적립됩니다.
+                    최종 포인트 적립은 관장님 회원가입 승인 후 가능합니다.
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
@@ -224,8 +300,7 @@ export default function InputForm({
 
           <Form {...form}>
             <form
-              id="joinForm"
-              onSubmit={form.handleSubmit(onSubmit)}
+              onSubmit={form.handleSubmit(handleSubmit)}
               className="flex flex-col gap-5"
             >
               {/* 이메일 필드 */}
@@ -240,39 +315,45 @@ export default function InputForm({
                         placeholder="m@example.com"
                         {...field}
                         type="email"
+                        disabled={states.isEmailFieldDisabled}
                       />
                     </FormControl>
                     <FormMessage />
+                    {states.isNotVerificationEmail !== null && (
+                      <p
+                        className={
+                          states.isNotVerificationEmail
+                            ? "text-green-500"
+                            : "text-red-500"
+                        }
+                      >
+                        {states.isNotVerificationEmail
+                          ? "사용 가능한 이메일입니다."
+                          : "이미 사용중인 이메일입니다."}
+                      </p>
+                    )}
                   </FormItem>
                 )}
-                disabled={isEmailFieldDisabled}
               />
 
-              {isEmailValid && !isEmailFieldDisabled && (
-                <div>
-                  <Button
-                    type="button"
-                    onClick={handleEmailDuplicateCheck}
-                    className="w-full"
-                    disabled={!isEmailValid || isEmailAvailable}
-                  >
-                    {isEmailAvailable
-                      ? "인증번호 전송 완료"
-                      : "이메일 중복 확인"}
-                  </Button>
-                  {/* 인증번호 전송 버튼 밑에 오류 메시지 표시 */}
-                  {form.formState.errors.emailVerificationCode && (
-                    <p className="text-sm text-red-500">
-                      {form.formState.errors.emailVerificationCode.message}
-                    </p>
+              {states.isEmailValid && !states.isEmailFieldDisabled && (
+                <Button
+                  type="button"
+                  onClick={handleEmailVerification}
+                  disabled={states.isSending}
+                >
+                  {states.isSending ? (
+                    <div className="flex items-center gap-2">
+                      <Spinner /> 처리 중...
+                    </div>
+                  ) : (
+                    "이메일 인증하기"
                   )}
-                </div>
+                </Button>
               )}
 
-              {/* 이메일 인증번호 필드 */}
-              {showVerificationField && (
+              {states.showVerificationField && (
                 <>
-                  {/* 이메일 인증번호 필드 */}
                   <FormField
                     control={form.control}
                     name="emailVerificationCode"
@@ -284,26 +365,22 @@ export default function InputForm({
                             {...field}
                             type="text"
                             placeholder="123456"
-                            disabled={isVerificationComplete} // 인증 완료 시 비활성화
+                            disabled={states.isVerificationComplete}
+                            onChange={(e) => {
+                              const value = e.target.value
+                                .replace(/\D/g, "")
+                                .slice(0, 6);
+                              field.onChange(value);
+                            }}
                           />
                         </FormControl>
                         <FormMessage />
-                        {isVerificationComplete && (
-                          <p className="text-green-500 text-sm">
-                            인증 완료되었습니다.
-                          </p>
-                        )}
                       </FormItem>
                     )}
                   />
 
-                  {/* 인증번호 검증 버튼 */}
-                  {isVerificationCodeValid && !isVerificationComplete && (
-                    <Button
-                      type="button"
-                      onClick={handleVerifyCode}
-                      className="w-full"
-                    >
+                  {!states.isVerificationComplete && (
+                    <Button type="button" onClick={handleVerifyCode}>
                       인증번호 검증
                     </Button>
                   )}
@@ -322,7 +399,7 @@ export default function InputForm({
                         <Input
                           placeholder="••••••••"
                           {...field}
-                          type={showPassword ? "text" : "password"} // 동적 타입 변경
+                          type={states.showPassword ? "text" : "password"} // 동적 타입 변경
                         />
                       </FormControl>
                       <button
@@ -330,7 +407,7 @@ export default function InputForm({
                         onClick={toggleShowPassword}
                         className="absolute right-2 top-1/2 transform -translate-y-1/2"
                       >
-                        {showPassword ? (
+                        {states.showPassword ? (
                           <Eye size={18} />
                         ) : (
                           <EyeOff size={18} />
@@ -475,7 +552,7 @@ export default function InputForm({
                         <Input
                           placeholder="••••••••"
                           {...field}
-                          type={showPassword ? "text" : "password"} // 동적 타입 변경
+                          type={states.showSecondPassword ? "text" : "password"} // 동적 타입 변경
                         />
                       </FormControl>
                       <button
@@ -483,7 +560,7 @@ export default function InputForm({
                         onClick={toggleShowSecondPassword}
                         className="absolute right-2 top-1/2 transform -translate-y-1/2"
                       >
-                        {showSecondPassword ? (
+                        {states.showSecondPassword ? (
                           <Eye size={18} />
                         ) : (
                           <EyeOff size={18} />
@@ -495,7 +572,7 @@ export default function InputForm({
                 )}
               />
 
-              <AlertDialog open={isDialogOpen}>
+              <AlertDialog open={states.isDialogOpen}>
                 <AlertDialogTrigger
                   className="bg-black h-10"
                   style={{
@@ -518,21 +595,15 @@ export default function InputForm({
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel onClick={() => router.push("/")}>
+                    <AlertDialogCancel
+                      type="button"
+                      onClick={() =>
+                        setStates((prev) => ({ ...prev, isDialogOpen: false }))
+                      }
+                    >
                       아니오
                     </AlertDialogCancel>
-                    <AlertDialogAction
-                      type="button"
-                      onClick={form.handleSubmit((formData) => {
-                        toast(
-                          `관장님께 회원가입 요청이 전송되었습니다. 승인 후 사용 가능합니다.`,
-                          {
-                            description: `Username: ${formData.username}`,
-                          }
-                        );
-                        router.push("/");
-                      })}
-                    >
+                    <AlertDialogAction type="button" onClick={handleConfirm}>
                       네!
                     </AlertDialogAction>
                   </AlertDialogFooter>
