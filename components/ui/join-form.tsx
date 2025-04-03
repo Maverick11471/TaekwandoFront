@@ -42,7 +42,7 @@ import {
   emailVericationCodeCheck,
   join,
 } from "../../app/apis/memberApis";
-import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { useAppDispatch } from "@/lib/hooks";
 
 const Spinner = () => (
   <svg
@@ -147,9 +147,6 @@ export default function InputForm({
       secondPassword: "",
       birthday: undefined,
     },
-    context: {
-      isSendMail: states.showVerificationField,
-    },
   });
 
   const emailValue = form.watch("email");
@@ -228,15 +225,6 @@ export default function InputForm({
     }));
   };
 
-  const handleSendVerificationCode = () => {
-    setStates((prev) => ({ ...prev, isEmailFieldDisabled: true }));
-    setStates((prev) => ({ ...prev, showVerificationField: true }));
-  };
-
-  function onSubmit() {
-    setStates((prev) => ({ ...prev, isDialogOpen: true }));
-  }
-
   const handleValidation = async () => {
     const isValid = await form.trigger();
 
@@ -262,8 +250,12 @@ export default function InputForm({
 
       const result = await dispatch(join(payload)).unwrap();
 
-      toast.success("회원가입 요청이 전송되었습니다");
-      router.push("/");
+      if (result.meta.requestStatus === "fulfilled") {
+        toast.success("회원가입 요청이 전송되었습니다");
+        router.push("/");
+      } else {
+        throw new Error("서버 요청 실패");
+      }
     } catch (error) {
       toast.error("가입 처리 중 오류 발생");
     }

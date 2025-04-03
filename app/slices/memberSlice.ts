@@ -3,7 +3,11 @@ import {
   mailCheck,
   sendEmail,
   emailVericationCodeCheck,
-} from "../apis/memberApis"; // API 호출 Thunk 가져오기
+  join,
+  login,
+  findPassword,
+  updatePassword,
+} from "../apis/memberApis";
 
 interface MemberState {
   email: string;
@@ -44,6 +48,31 @@ const memberSlice = createSlice({
       .addCase(emailVericationCodeCheck.rejected, (state, action) => {
         console.log("인증번호 오류", action.error);
         alert("에러가 발생했습니다.");
+        return state;
+      })
+      .addCase(join.fulfilled, (state, action) => {
+        return action.payload;
+      })
+      .addCase(join.rejected, (state, action) => {
+        alert("에러가 발생했습니다.");
+        return state;
+      })
+      .addCase(login.fulfilled, (state, action) => {
+        return action.payload.item;
+      })
+      .addCase(login.rejected, (state, action) => {
+        return state;
+      })
+      .addCase(findPassword.fulfilled, (state, action) => {
+        return action.payload.item;
+      })
+      .addCase(findPassword.rejected, (state, action) => {
+        return state;
+      })
+      .addCase(updatePassword.fulfilled, (state, action) => {
+        return action.payload.item;
+      })
+      .addCase(updatePassword.rejected, (state, action) => {
         return state;
       });
   },

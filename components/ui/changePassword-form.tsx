@@ -25,11 +25,7 @@ import { useEffect, useState, useRef } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/lib/hooks";
-import {
-  findPassword,
-  emailVericationCodeCheck,
-  updatePassword,
-} from "@/app/apis/memberApis";
+import { findPassword, emailVericationCodeCheck } from "@/app/apis/memberApis";
 
 export default function InputForm({
   className,
@@ -50,29 +46,6 @@ export default function InputForm({
 
   const FormSchema = z
     .object({
-      email: z.string().email({ message: "유효한 이메일 주소를 입력해주세요" }),
-      username: z
-        .string()
-        .min(2, { message: "사용자 이름은 2자 이상이어야 합니다" })
-        .max(20, { message: "사용자 이름은 20자 이하여야 합니다" }),
-      emailVerificationCode: z.string().superRefine((value, ctx) => {
-        if (!states.showVerificationField) return;
-        const isEmailDisabled =
-          form.getValues("email") && form.getValues("username");
-        if (!isEmailDisabled) return;
-        if (value.length !== 6) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "인증번호는 6자리 숫자입니다.",
-          });
-        }
-        if (!/^\d+$/.test(value)) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "인증번호는 숫자로만 입력해주세요.",
-          });
-        }
-      }),
       password: z.string().optional(),
       secondPassword: z.string().optional(),
     })
@@ -182,55 +155,22 @@ export default function InputForm({
   };
 
   const handleVerifyCode = async () => {
-    try {
-      const email = form.getValues("email");
-      const enteredCode = form.getValues("emailVerificationCode");
-
-      const result = await dispatch(
-        emailVericationCodeCheck({ enteredCode, email })
-      );
-
-      console.log("API 응답:", result); // 🔎 추가
-
-      if (result.meta.requestStatus === "fulfilled") {
-        setSteps("password");
-
-        toast.success("인증이 완료되었습니다.");
-      } else {
-        const errorMsg = result.payload?.message || "인증 실패";
-        form.setError("emailVerificationCode", { message: errorMsg });
-      }
-    } catch (error) {
-      console.error("인증 에러:", error); // 🔎 추가
-      toast.error("인증 처리 중 오류 발생");
-    }
-  };
-
-  const handlePasswordChange = async () => {
-    if (form.getValues("password") !== form.getValues("secondPassword")) {
-      form.setError("secondPassword", {
-        message: "비밀번호가 일치하지 않습니다",
+    const email = form.getValues("email");
+    const enteredCode = form.getValues("emailVerificationCode");
+    const emailVericationCodeCheckResult = await dispatch(
+      emailVericationCodeCheck({ enteredCode, email })
+    ).unwrap();
+    console.log(emailVericationCodeCheck);
+    if (emailVericationCodeCheckResult) {
+      setStates((prev) => ({ ...prev, isVerificationComplete: true }));
+      toast.success("인증이 완료되었습니다.");
+      router.push("/changePassword");
+    } else {
+      form.setError("emailVerificationCode", {
+        message: "잘못된 인증번호입니다",
       });
-      return;
-    }
-
-    try {
-      const result = await dispatch(
-        updatePassword({
-          email: form.getValues("email"),
-          password: form.getValues("password"),
-        })
-      ).unwrap();
-
-      if (result.statusMessage === "update") {
-        toast.success("비밀번호가 변경되었습니다");
-        router.push("/login");
-      }
-    } catch (error) {
-      toast.error("비밀번호 변경 실패");
     }
   };
-
   return (
     <div
       className={cn("flex flex-col gap-6 mb-16 mt-10", className)}
@@ -238,7 +178,7 @@ export default function InputForm({
     >
       <Card>
         <CardHeader>
-          {steps === "password" ? "비밀번호 재설정" : "비밀번호 찾기"}{" "}
+          <CardTitle>비밀번호 찾기</CardTitle>
           <CardDescription>
             {steps === "password"
               ? "새로운 비밀번호를 입력해주세요"
@@ -342,50 +282,6 @@ export default function InputForm({
                       )}
                     </>
                   )}
-                </>
-              )}
-
-              {steps === "password" && (
-                <>
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>새 비밀번호</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="password"
-                            placeholder="새 비밀번호 입력"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="secondPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>비밀번호 확인</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="password"
-                            placeholder="비밀번호 재입력"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <Button type="button" onClick={handlePasswordChange}>
-                    비밀번호 변경
-                  </Button>
                 </>
               )}
             </form>

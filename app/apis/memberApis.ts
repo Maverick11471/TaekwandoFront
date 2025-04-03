@@ -5,6 +5,7 @@ interface MemberData {
   email?: string;
   emailVerificationCode?: string;
   enteredCode?: string;
+  password?: string;
 }
 
 export const mailCheck = createAsyncThunk(
@@ -77,6 +78,72 @@ export const join = createAsyncThunk(
     } catch (e) {
       console.log("회원가입 오류 발생");
       return thunkApi.rejectWithValue("join error");
+    }
+  }
+);
+
+export const login = createAsyncThunk(
+  "member/login",
+
+  async (member: MemberData, thunkApi) => {
+    try {
+      const response = await axios.post(
+        `http://localhost:8080/members/login`,
+        member
+      );
+
+      return response.data;
+    } catch (e) {
+      if (axios.isAxiosError(e)) {
+        return thunkApi.rejectWithValue(e.response?.data);
+      }
+      return thunkApi.rejectWithValue({
+        statusMessage: "클라이언트 오류 발생",
+      });
+    }
+  }
+);
+
+export const findPassword = createAsyncThunk(
+  "member/findPassword",
+
+  async (member: MemberData, thunkApi) => {
+    try {
+      const response = await axios.post(
+        `http://localhost:8080/members/find-password`,
+        member
+      );
+
+      return response.data;
+    } catch (e) {
+      if (axios.isAxiosError(e)) {
+        return thunkApi.rejectWithValue(e.response?.data);
+      }
+      return thunkApi.rejectWithValue({
+        statusMessage: "클라이언트 오류 발생",
+      });
+    }
+  }
+);
+
+export const updatePassword = createAsyncThunk(
+  "member/updatePassword",
+
+  async (member: MemberData, thunkApi) => {
+    try {
+      const response = await axios.post(
+        `http://localhost:8080/members/update-password`,
+        member
+      );
+
+      return response.data;
+    } catch (e) {
+      if (axios.isAxiosError(e)) {
+        return thunkApi.rejectWithValue(e.response?.data);
+      }
+      return thunkApi.rejectWithValue({
+        statusMessage: "클라이언트 오류 발생",
+      });
     }
   }
 );
